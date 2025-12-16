@@ -208,7 +208,7 @@ Once connected, you can query:
 
 - 📧 **Email:** [support@superlines.io](mailto:support@superlines.io)
 - 📖 **Docs:** [superlines.io/docs](https://superlines.io/docs)
-- 🐛 **Issues:** [github.com/superlines-io/mcp-server/issues](https://github.com/superlines-io/mcp-server/issues)
+- 🐛 **Issues:** [github.com/Superlines/mcp-server/issues](https://github.com/Superlines/mcp-server/issues)
 
 ---
 

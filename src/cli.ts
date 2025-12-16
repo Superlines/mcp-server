@@ -468,7 +468,7 @@ AVAILABLE TOOLS
 
 DOCUMENTATION
   https://superlines.io/integrations/mcp
-  https://github.com/superlines-io/mcp-server
+  https://github.com/Superlines/mcp-server
 
 SUPPORT
   support@superlines.io

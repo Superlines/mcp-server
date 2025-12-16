@@ -15,7 +15,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/@superlines/mcp-server"><img src="https://img.shields.io/npm/v/@superlines/mcp-server.svg" alt="npm version"></a>
   <a href="https://www.npmjs.com/package/@superlines/mcp-server"><img src="https://img.shields.io/npm/dm/@superlines/mcp-server.svg" alt="npm downloads"></a>
-  <a href="https://github.com/superlines-io/mcp-server/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@superlines/mcp-server.svg" alt="license"></a>
+  <a href="https://github.com/Superlines/mcp-server/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@superlines/mcp-server.svg" alt="license"></a>
 </p>
 
 <p align="center">
@@ -396,7 +396,7 @@ chmod 600 ~/Library/Application\ Support/Claude/claude_desktop_config.json
 
 ## Beta Notice
 
-⚠️ The Superlines MCP server is currently in beta and may experience instability or contain bugs. Please report issues at [github.com/superlines-io/mcp-server/issues](https://github.com/superlines-io/mcp-server/issues).
+⚠️ The Superlines MCP server is currently in beta and may experience instability or contain bugs. Please report issues at [github.com/Superlines/mcp-server/issues](https://github.com/Superlines/mcp-server/issues).
 
 ---
 
@@ -410,7 +410,7 @@ chmod 600 ~/Library/Application\ Support/Claude/claude_desktop_config.json
 ## Support
 
 - **Email:** [support@superlines.io](mailto:support@superlines.io)
-- **Issues:** [github.com/superlines-io/mcp-server/issues](https://github.com/superlines-io/mcp-server/issues)
+- **Issues:** [github.com/Superlines/mcp-server/issues](https://github.com/Superlines/mcp-server/issues)
 
 ---
 
