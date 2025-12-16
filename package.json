@@ -1,0 +1,54 @@
+{
+  "name": "@superlines/mcp-server",
+  "version": "1.0.0-beta.1",
+  "description": "Model Context Protocol (MCP) server for Superlines AI visibility analytics. Connect Claude Desktop, Cursor, or any MCP-compatible client to your Superlines data.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "superlines",
+    "ai-visibility",
+    "seo",
+    "ai-search",
+    "claude",
+    "cursor",
+    "llm",
+    "analytics"
+  ],
+  "author": "Superlines <support@superlines.io>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/superlines-io/mcp-server.git"
+  },
+  "homepage": "https://superlines.io/integrations/mcp",
+  "bugs": {
+    "url": "https://github.com/superlines-io/mcp-server/issues"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "superlines-mcp": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup src/cli.ts src/index.ts --format cjs,esm --dts --clean",
+    "dev": "tsup src/cli.ts src/index.ts --format cjs,esm --dts --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.0"
+  }
+}

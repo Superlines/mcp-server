@@ -1,0 +1,23 @@
+# Source files (we publish dist/)
+src/
+tsconfig.json
+.eslintrc.js
+
+# Development files
+*.log
+.DS_Store
+node_modules/
+
+# Test files
+__tests__/
+*.test.ts
+*.spec.ts
+coverage/
+
+# IDE
+.idea/
+.vscode/
+
+# Build artifacts
+*.tsbuildinfo
+
