@@ -480,7 +480,7 @@ SUPPORT
 // ============================================================================
 
 function showVersion(): void {
-  console.log("@superlines/mcp-server v1.0.0-beta.2");
+  console.log("@superlines/mcp-server v1.0.0-beta.3");
 }
 
 // ============================================================================
