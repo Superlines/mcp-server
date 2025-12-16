@@ -1,6 +1,6 @@
 {
   "name": "@superlines/mcp-server",
-  "version": "1.0.0-beta.3",
+  "version": "1.0.0-beta.4",
   "description": "Model Context Protocol (MCP) server for Superlines AI visibility analytics. Connect Claude Desktop, Cursor, or any MCP-compatible client to your Superlines data.",
   "keywords": [
     "mcp",
