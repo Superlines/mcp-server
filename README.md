@@ -21,7 +21,6 @@
 <p align="center">
   <a href="#quick-start">Quick Start</a> •
   <a href="#available-tools">Available Tools</a> •
-  <a href="#configuration">Configuration</a> •
   <a href="#troubleshooting">Troubleshooting</a>
 </p>
 
@@ -56,28 +55,46 @@ Superlines tracks how your brand appears in AI-powered search engines like ChatG
 
 ## Quick Start
 
-### 1. Get Your API Key
+### Step 1: Get Your API Key
 
 1. Log in to [analytics.superlines.io](https://analytics.superlines.io)
 2. Go to **Organization Settings** → **API Keys**
 3. Click **"Create New API Key"**
-4. Copy the key (starts with `sl_live_`)
+4. Copy the key (starts with `sl_live_`) — it's only shown once!
 
-### 2. Configure Claude Desktop
+### Step 2: Create the MCP Proxy Script
+
+Create a directory and download the proxy script:
+
+**macOS / Linux:**
+```bash
+mkdir -p ~/superlines-mcp
+curl -o ~/superlines-mcp/mcp-proxy.js https://raw.githubusercontent.com/Superlines/mcp-server/main/mcp-proxy.js
+chmod +x ~/superlines-mcp/mcp-proxy.js
+```
+
+**Windows (PowerShell):**
+```powershell
+mkdir $env:USERPROFILE\superlines-mcp
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Superlines/mcp-server/main/mcp-proxy.js" -OutFile "$env:USERPROFILE\superlines-mcp\mcp-proxy.js"
+```
+
+Or manually create the file — see [mcp-proxy.js](#mcp-proxyjs-source) below.
+
+### Step 3: Configure Claude Desktop
 
 Edit your Claude Desktop configuration file:
 
-**macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+**macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`  
 **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 
-Add this configuration:
-
+**macOS Configuration:**
 ```json
 {
   "mcpServers": {
     "superlines": {
-      "command": "npx",
-      "args": ["-y", "@superlines/mcp-server"],
+      "command": "node",
+      "args": ["/Users/YOUR_USERNAME/superlines-mcp/mcp-proxy.js"],
       "env": {
         "SUPERLINES_API_KEY": "sl_live_YOUR_API_KEY"
       }
@@ -86,14 +103,37 @@ Add this configuration:
 }
 ```
 
-### 3. Restart Claude Desktop
+**Windows Configuration:**
+```json
+{
+  "mcpServers": {
+    "superlines": {
+      "command": "node",
+      "args": ["C:\\Users\\YOUR_USERNAME\\superlines-mcp\\mcp-proxy.js"],
+      "env": {
+        "SUPERLINES_API_KEY": "sl_live_YOUR_API_KEY"
+      }
+    }
+  }
+}
+```
 
-Quit and reopen Claude Desktop. You should see a hammer icon (🔨) indicating tools are available.
+> **Important:** Replace `YOUR_USERNAME` with your actual username and `sl_live_YOUR_API_KEY` with your actual API key.
 
-### 4. Start Asking Questions!
+**Find your username:**
+- **macOS:** Run `echo $USER` in Terminal
+- **Windows:** Run `echo %USERNAME%` in Command Prompt
+
+### Step 4: Restart Claude Desktop
+
+1. **Quit completely:** ⌘+Q on Mac, or right-click taskbar icon → Exit on Windows
+2. **Reopen** Claude Desktop
+3. **Verify:** Look for the hammer icon (🔨) indicating MCP tools are available
+
+### Step 5: Start Asking Questions!
 
 ```
-What brands do I have access to?
+What brands do I have access to in Superlines?
 ```
 
 ```
@@ -106,56 +146,111 @@ Audit https://example.com for LLM-friendliness
 
 ---
 
-## Installation Options
+## mcp-proxy.js Source
 
-### Option 1: npx (Recommended)
+If you prefer to create the file manually, save this as `mcp-proxy.js`:
 
-No installation required. Claude Desktop runs it automatically:
+```javascript
+#!/usr/bin/env node
 
-```json
-{
-  "mcpServers": {
-    "superlines": {
-      "command": "npx",
-      "args": ["-y", "@superlines/mcp-server"],
-      "env": {
-        "SUPERLINES_API_KEY": "sl_live_YOUR_API_KEY"
-      }
-    }
-  }
+const https = require('https');
+const readline = require('readline');
+
+// Configuration
+const MCP_SERVER_URL = process.env.MCP_SERVER_URL || 'https://europe-west1-superlines-platform-prod.cloudfunctions.net/mcp';
+const API_KEY = process.env.SUPERLINES_API_KEY;
+
+if (!API_KEY) {
+  console.error(JSON.stringify({
+    jsonrpc: '2.0',
+    error: { code: -32600, message: 'SUPERLINES_API_KEY environment variable not set' },
+    id: null
+  }));
+  process.exit(1);
 }
-```
 
-### Option 2: Global Installation
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+  terminal: false
+});
 
-```bash
-npm install -g @superlines/mcp-server
-```
+rl.on('line', async (line) => {
+  try {
+    const message = JSON.parse(line);
+    const isNotification = !('id' in message) || message.id === undefined;
+    const data = JSON.stringify(message);
 
-Then configure Claude Desktop:
+    const url = new URL(MCP_SERVER_URL);
+    const options = {
+      hostname: url.hostname,
+      port: 443,
+      path: url.pathname,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(data),
+        'Authorization': `Bearer ${API_KEY}`
+      },
+      timeout: 90000
+    };
 
-```json
-{
-  "mcpServers": {
-    "superlines": {
-      "command": "superlines-mcp",
-      "env": {
-        "SUPERLINES_API_KEY": "sl_live_YOUR_API_KEY"
-      }
-    }
+    const req = https.request(options, (res) => {
+      let responseData = '';
+      res.on('data', (chunk) => { responseData += chunk; });
+      res.on('end', () => {
+        if (isNotification) return;
+        try {
+          const parsed = JSON.parse(responseData);
+          if (!parsed.jsonrpc) parsed.jsonrpc = '2.0';
+          if (parsed.error && !parsed.id && message.id) parsed.id = message.id;
+          console.log(JSON.stringify(parsed));
+        } catch (error) {
+          console.log(JSON.stringify({
+            jsonrpc: '2.0',
+            id: message.id || null,
+            error: { code: -32603, message: 'Failed to parse server response' }
+          }));
+        }
+      });
+    });
+
+    req.on('error', (error) => {
+      console.log(JSON.stringify({
+        jsonrpc: '2.0',
+        id: message.id,
+        error: { code: -32603, message: `Connection error: ${error.message}` }
+      }));
+    });
+
+    req.on('timeout', () => {
+      req.destroy();
+      console.log(JSON.stringify({
+        jsonrpc: '2.0',
+        id: message.id,
+        error: { code: -32603, message: 'Request timeout - please retry' }
+      }));
+    });
+
+    req.write(data);
+    req.end();
+  } catch (error) {
+    console.log(JSON.stringify({
+      jsonrpc: '2.0',
+      error: { code: -32700, message: 'Parse error' },
+      id: null
+    }));
   }
-}
+});
+
+process.on('uncaughtException', (error) => {
+  console.log(JSON.stringify({
+    jsonrpc: '2.0',
+    error: { code: -32603, message: `Internal error: ${error.message}` },
+    id: null
+  }));
+});
 ```
-
-### Option 3: HTTP Server Mode
-
-Run as a standalone HTTP server for testing or custom integrations:
-
-```bash
-SUPERLINES_API_KEY=sl_live_xxx npx @superlines/mcp-server http
-```
-
-The server runs on port 3000 by default. Use `PORT` environment variable to change.
 
 ---
 
@@ -163,14 +258,14 @@ The server runs on port 3000 by default. Use `PORT` environment variable to chan
 
 ### Cursor
 
-Add to your Cursor settings (`.cursor/mcp.json` in your project or globally):
+Add to `.cursor/mcp.json` in your project or globally:
 
 ```json
 {
   "mcpServers": {
     "superlines": {
-      "command": "npx",
-      "args": ["-y", "@superlines/mcp-server"],
+      "command": "node",
+      "args": ["/Users/YOUR_USERNAME/superlines-mcp/mcp-proxy.js"],
       "env": {
         "SUPERLINES_API_KEY": "sl_live_YOUR_API_KEY"
       }
@@ -188,34 +283,14 @@ Add to your Continue configuration:
   "mcpServers": [
     {
       "name": "superlines",
-      "command": "npx",
-      "args": ["-y", "@superlines/mcp-server"],
+      "command": "node",
+      "args": ["/Users/YOUR_USERNAME/superlines-mcp/mcp-proxy.js"],
       "env": {
         "SUPERLINES_API_KEY": "sl_live_YOUR_API_KEY"
       }
     }
   ]
 }
-```
-
-### Programmatic Usage
-
-```typescript
-import { SuperlinesMCPClient } from '@superlines/mcp-server';
-
-const client = new SuperlinesMCPClient({
-  apiKey: 'sl_live_YOUR_KEY'
-});
-
-// List available tools
-const tools = await client.listTools();
-
-// Call a specific tool
-const result = await client.callTool('analyze_metrics', {
-  metrics: ['brand_visibility', 'citations'],
-  startDate: '2025-01-01',
-  endDate: '2025-01-31'
-});
 ```
 
 ---
@@ -277,8 +352,7 @@ const result = await client.callTool('analyze_metrics', {
 |----------|----------|-------------|
 | `SUPERLINES_API_KEY` | Yes | Your Superlines API key (starts with `sl_live_`) |
 | `MCP_SERVER_URL` | No | Override the default server URL |
-| `DEBUG` | No | Set to `true` for debug logging to `/tmp/superlines-mcp-debug.log` |
-| `PORT` | No | Port for HTTP server mode (default: 3000) |
+| `DEBUG` | No | Set to `true` for debug logging |
 
 ---
 
@@ -320,16 +394,16 @@ What content should I create to improve my AI search visibility?
 
 ### "SUPERLINES_API_KEY environment variable not set"
 
-Make sure your config includes the `env` section:
+Make sure your config includes the `env` section with your API key:
 
 ```json
 {
   "mcpServers": {
     "superlines": {
-      "command": "npx",
-      "args": ["-y", "@superlines/mcp-server"],
+      "command": "node",
+      "args": ["/path/to/mcp-proxy.js"],
       "env": {
-        "SUPERLINES_API_KEY": "sl_live_YOUR_API_KEY"  // ← Don't forget this!
+        "SUPERLINES_API_KEY": "sl_live_YOUR_API_KEY"
       }
     }
   }
@@ -348,35 +422,25 @@ Make sure your config includes the `env` section:
 
 ### Claude says "I don't have access to any tools"
 
-1. Restart Claude Desktop completely (⌘+Q on Mac, not just close window)
-2. Check your config file is valid JSON: `cat ~/Library/Application\ Support/Claude/claude_desktop_config.json | python3 -m json.tool`
-3. Enable debug mode and check logs:
+1. **Restart Claude Desktop completely** (⌘+Q on Mac, not just close window)
+2. **Check the script path** — use the full absolute path, not `~`
+3. **Validate your config** is valid JSON:
+   ```bash
+   cat ~/Library/Application\ Support/Claude/claude_desktop_config.json | python3 -m json.tool
+   ```
+4. **Test the proxy manually:**
+   ```bash
+   export SUPERLINES_API_KEY="sl_live_your_key"
+   echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | node ~/superlines-mcp/mcp-proxy.js
+   ```
+   You should see a JSON response listing available tools.
 
-```json
-{
-  "mcpServers": {
-    "superlines": {
-      "command": "npx",
-      "args": ["-y", "@superlines/mcp-server"],
-      "env": {
-        "SUPERLINES_API_KEY": "sl_live_YOUR_KEY",
-        "DEBUG": "true"
-      }
-    }
-  }
-}
-```
+### Script not found
 
-Then check `/tmp/superlines-mcp-debug.log`
-
-### Test the Server Manually
-
-```bash
-export SUPERLINES_API_KEY="sl_live_your_key"
-echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | npx @superlines/mcp-server
-```
-
-You should see a JSON response listing available tools.
+- Use the **full absolute path** in your config
+- ✅ Good: `/Users/john/superlines-mcp/mcp-proxy.js`
+- ❌ Bad: `~/superlines-mcp/mcp-proxy.js`
+- **Windows:** Use double backslashes: `C:\\Users\\john\\...`
 
 ---
 
@@ -417,4 +481,3 @@ chmod 600 ~/Library/Application\ Support/Claude/claude_desktop_config.json
 ## License
 
 MIT © [Superlines](https://superlines.io)
-
