@@ -62,39 +62,21 @@ Superlines tracks how your brand appears in AI-powered search engines like ChatG
 3. Click **"Create New API Key"**
 4. Copy the key (starts with `sl_live_`) — it's only shown once!
 
-### Step 2: Create the MCP Proxy Script
-
-Create a directory and download the proxy script:
-
-**macOS / Linux:**
-```bash
-mkdir -p ~/superlines-mcp
-curl -o ~/superlines-mcp/mcp-proxy.js https://raw.githubusercontent.com/Superlines/mcp-server/main/mcp-proxy.js
-chmod +x ~/superlines-mcp/mcp-proxy.js
-```
-
-**Windows (PowerShell):**
-```powershell
-mkdir $env:USERPROFILE\superlines-mcp
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Superlines/mcp-server/main/mcp-proxy.js" -OutFile "$env:USERPROFILE\superlines-mcp\mcp-proxy.js"
-```
-
-Or manually create the file — see [mcp-proxy.js](#mcp-proxyjs-source) below.
-
-### Step 3: Configure Claude Desktop
+### Step 2: Configure Claude Desktop
 
 Edit your Claude Desktop configuration file:
 
 **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`  
 **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 
-**macOS Configuration:**
+Add this configuration:
+
 ```json
 {
   "mcpServers": {
     "superlines": {
-      "command": "node",
-      "args": ["/Users/YOUR_USERNAME/superlines-mcp/mcp-proxy.js"],
+      "command": "npx",
+      "args": ["-y", "@superlines/mcp-server"],
       "env": {
         "SUPERLINES_API_KEY": "sl_live_YOUR_API_KEY"
       }
@@ -103,34 +85,15 @@ Edit your Claude Desktop configuration file:
 }
 ```
 
-**Windows Configuration:**
-```json
-{
-  "mcpServers": {
-    "superlines": {
-      "command": "node",
-      "args": ["C:\\Users\\YOUR_USERNAME\\superlines-mcp\\mcp-proxy.js"],
-      "env": {
-        "SUPERLINES_API_KEY": "sl_live_YOUR_API_KEY"
-      }
-    }
-  }
-}
-```
+> **Important:** Replace `sl_live_YOUR_API_KEY` with your actual API key.
 
-> **Important:** Replace `YOUR_USERNAME` with your actual username and `sl_live_YOUR_API_KEY` with your actual API key.
-
-**Find your username:**
-- **macOS:** Run `echo $USER` in Terminal
-- **Windows:** Run `echo %USERNAME%` in Command Prompt
-
-### Step 4: Restart Claude Desktop
+### Step 3: Restart Claude Desktop
 
 1. **Quit completely:** ⌘+Q on Mac, or right-click taskbar icon → Exit on Windows
 2. **Reopen** Claude Desktop
 3. **Verify:** Look for the hammer icon (🔨) indicating MCP tools are available
 
-### Step 5: Start Asking Questions!
+### Step 4: Start Asking Questions!
 
 ```
 What brands do I have access to in Superlines?
@@ -146,111 +109,58 @@ Audit https://example.com for LLM-friendliness
 
 ---
 
-## mcp-proxy.js Source
+## Alternative: Local Proxy Script
 
-If you prefer to create the file manually, save this as `mcp-proxy.js`:
+If you prefer not to use npx, you can download and run the proxy script locally.
 
-```javascript
-#!/usr/bin/env node
+### Download the Proxy Script
 
-const https = require('https');
-const readline = require('readline');
-
-// Configuration
-const MCP_SERVER_URL = process.env.MCP_SERVER_URL || 'https://europe-west1-superlines-platform-prod.cloudfunctions.net/mcp';
-const API_KEY = process.env.SUPERLINES_API_KEY;
-
-if (!API_KEY) {
-  console.error(JSON.stringify({
-    jsonrpc: '2.0',
-    error: { code: -32600, message: 'SUPERLINES_API_KEY environment variable not set' },
-    id: null
-  }));
-  process.exit(1);
-}
-
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-  terminal: false
-});
-
-rl.on('line', async (line) => {
-  try {
-    const message = JSON.parse(line);
-    const isNotification = !('id' in message) || message.id === undefined;
-    const data = JSON.stringify(message);
-
-    const url = new URL(MCP_SERVER_URL);
-    const options = {
-      hostname: url.hostname,
-      port: 443,
-      path: url.pathname,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(data),
-        'Authorization': `Bearer ${API_KEY}`
-      },
-      timeout: 90000
-    };
-
-    const req = https.request(options, (res) => {
-      let responseData = '';
-      res.on('data', (chunk) => { responseData += chunk; });
-      res.on('end', () => {
-        if (isNotification) return;
-        try {
-          const parsed = JSON.parse(responseData);
-          if (!parsed.jsonrpc) parsed.jsonrpc = '2.0';
-          if (parsed.error && !parsed.id && message.id) parsed.id = message.id;
-          console.log(JSON.stringify(parsed));
-        } catch (error) {
-          console.log(JSON.stringify({
-            jsonrpc: '2.0',
-            id: message.id || null,
-            error: { code: -32603, message: 'Failed to parse server response' }
-          }));
-        }
-      });
-    });
-
-    req.on('error', (error) => {
-      console.log(JSON.stringify({
-        jsonrpc: '2.0',
-        id: message.id,
-        error: { code: -32603, message: `Connection error: ${error.message}` }
-      }));
-    });
-
-    req.on('timeout', () => {
-      req.destroy();
-      console.log(JSON.stringify({
-        jsonrpc: '2.0',
-        id: message.id,
-        error: { code: -32603, message: 'Request timeout - please retry' }
-      }));
-    });
-
-    req.write(data);
-    req.end();
-  } catch (error) {
-    console.log(JSON.stringify({
-      jsonrpc: '2.0',
-      error: { code: -32700, message: 'Parse error' },
-      id: null
-    }));
-  }
-});
-
-process.on('uncaughtException', (error) => {
-  console.log(JSON.stringify({
-    jsonrpc: '2.0',
-    error: { code: -32603, message: `Internal error: ${error.message}` },
-    id: null
-  }));
-});
+**macOS / Linux:**
+```bash
+mkdir -p ~/superlines-mcp
+curl -o ~/superlines-mcp/mcp-proxy.js https://raw.githubusercontent.com/Superlines/mcp-server/main/mcp-proxy.js
+chmod +x ~/superlines-mcp/mcp-proxy.js
 ```
+
+**Windows (PowerShell):**
+```powershell
+mkdir $env:USERPROFILE\superlines-mcp
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Superlines/mcp-server/main/mcp-proxy.js" -OutFile "$env:USERPROFILE\superlines-mcp\mcp-proxy.js"
+```
+
+### Configure Claude Desktop (Local Proxy)
+
+**macOS:**
+```json
+{
+  "mcpServers": {
+    "superlines": {
+      "command": "node",
+      "args": ["/Users/YOUR_USERNAME/superlines-mcp/mcp-proxy.js"],
+      "env": {
+        "SUPERLINES_API_KEY": "sl_live_YOUR_API_KEY"
+      }
+    }
+  }
+}
+```
+
+**Windows:**
+```json
+{
+  "mcpServers": {
+    "superlines": {
+      "command": "node",
+      "args": ["C:\\Users\\YOUR_USERNAME\\superlines-mcp\\mcp-proxy.js"],
+      "env": {
+        "SUPERLINES_API_KEY": "sl_live_YOUR_API_KEY"
+      }
+    }
+  }
+}
+```
+
+> Replace `YOUR_USERNAME` with your actual username. Find it by running `echo $USER` (macOS) or `echo %USERNAME%` (Windows).
 
 ---
 
@@ -264,8 +174,8 @@ Add to `.cursor/mcp.json` in your project or globally:
 {
   "mcpServers": {
     "superlines": {
-      "command": "node",
-      "args": ["/Users/YOUR_USERNAME/superlines-mcp/mcp-proxy.js"],
+      "command": "npx",
+      "args": ["-y", "@superlines/mcp-server"],
       "env": {
         "SUPERLINES_API_KEY": "sl_live_YOUR_API_KEY"
       }
@@ -283,13 +193,36 @@ Add to your Continue configuration:
   "mcpServers": [
     {
       "name": "superlines",
-      "command": "node",
-      "args": ["/Users/YOUR_USERNAME/superlines-mcp/mcp-proxy.js"],
+      "command": "npx",
+      "args": ["-y", "@superlines/mcp-server"],
       "env": {
         "SUPERLINES_API_KEY": "sl_live_YOUR_API_KEY"
       }
     }
   ]
+}
+```
+
+### Global Installation (Alternative)
+
+If you prefer to install globally instead of using npx:
+
+```bash
+npm install -g @superlines/mcp-server
+```
+
+Then use this configuration:
+
+```json
+{
+  "mcpServers": {
+    "superlines": {
+      "command": "superlines-mcp",
+      "env": {
+        "SUPERLINES_API_KEY": "sl_live_YOUR_API_KEY"
+      }
+    }
+  }
 }
 ```
 

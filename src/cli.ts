@@ -30,8 +30,7 @@ import * as fs from "fs";
 // Configuration
 // ============================================================================
 
-const DEFAULT_SERVER_URL =
-  "https://europe-west1-superlines-platform-prod.cloudfunctions.net/mcp";
+const DEFAULT_SERVER_URL = "https://mcp.superlines.io";
 
 const config = {
   serverUrl: process.env.MCP_SERVER_URL || DEFAULT_SERVER_URL,
@@ -398,7 +397,7 @@ ENVIRONMENT VARIABLES
                         Get it at: https://analytics.superlines.io/settings/api-keys
 
   MCP_SERVER_URL        Optional. Override the default server URL
-                        Default: https://europe-west1-superlines-platform-prod.cloudfunctions.net/mcp
+                        Default: https://mcp.superlines.io
 
   DEBUG                 Optional. Set to 'true' for debug logging
                         Logs to: /tmp/superlines-mcp-debug.log
@@ -480,7 +479,7 @@ SUPPORT
 // ============================================================================
 
 function showVersion(): void {
-  console.log("@superlines/mcp-server v1.0.0-beta.4");
+  console.log("@superlines/mcp-server v1.0.0-beta.5");
 }
 
 // ============================================================================

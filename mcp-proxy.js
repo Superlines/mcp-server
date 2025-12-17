@@ -20,7 +20,7 @@ const https = require('https');
 const readline = require('readline');
 
 // Configuration
-const MCP_SERVER_URL = process.env.MCP_SERVER_URL || 'https://europe-west1-superlines-platform-prod.cloudfunctions.net/mcp';
+const MCP_SERVER_URL = process.env.MCP_SERVER_URL || 'https://mcp.superlines.io';
 const API_KEY = process.env.SUPERLINES_API_KEY;
 
 // Validate API key

@@ -11,7 +11,7 @@
 export const VERSION = "1.0.0-beta.3";
 
 export const DEFAULT_SERVER_URL =
-  "https://europe-west1-superlines-platform-prod.cloudfunctions.net/mcp";
+  "https://mcp.superlines.io";
 
 /**
  * Available MCP tools provided by Superlines
