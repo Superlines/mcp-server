@@ -4,7 +4,7 @@
  * Model Context Protocol (MCP) server for accessing Superlines AI visibility analytics.
  *
  * @module @superlines/mcp-server
- * @see https://superlines.io/integrations/mcp
+ * @see https://www.superlines.io/platform/mcp-api
  * @see https://modelcontextprotocol.io
  */
 

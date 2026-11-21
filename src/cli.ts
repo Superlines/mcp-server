@@ -17,7 +17,7 @@
  *   MCP_SERVER_URL        - Optional. Override the default MCP server URL
  *   DEBUG                 - Optional. Set to 'true' for debug logging
  *
- * @see https://superlines.io/integrations/mcp
+ * @see https://www.superlines.io/platform/mcp-api
  * @see https://modelcontextprotocol.io
  */
 
@@ -466,7 +466,7 @@ AVAILABLE TOOLS
     • schema_optimizer         - Optimize Schema.org markup
 
 DOCUMENTATION
-  https://superlines.io/integrations/mcp
+  https://www.superlines.io/platform/mcp-api
   https://github.com/Superlines/mcp-server
 
 SUPPORT
