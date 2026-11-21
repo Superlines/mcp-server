@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.superlines/mcp",
+  "title": "Superlines",
+  "description": "See how AI assistants mention, cite and rank your brand, and which competitors they recommend.",
+  "version": "1.0.0",
+  "websiteUrl": "https://www.superlines.io/platform/mcp-api",
+  "repository": {
+    "url": "https://github.com/Superlines/mcp-server",
+    "source": "github"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcpsse.superlines.io"
+    }
+  ]
+}

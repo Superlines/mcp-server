@@ -19,7 +19,8 @@
 </p>
 
 <p align="center">
-  <a href="#quick-start">Quick Start</a> •
+  <a href="#claude-and-chatgpt-sign-in-no-api-key">Sign-in connector</a> •
+  <a href="#quick-start-npm-package-api-key">Quick Start</a> •
   <a href="#available-tools">Available Tools</a> •
   <a href="#troubleshooting">Troubleshooting</a>
 </p>
@@ -47,13 +48,28 @@ Superlines tracks how your brand appears in AI-powered search engines like ChatG
 
 ## Prerequisites
 
-- **Node.js 18+** installed ([Download](https://nodejs.org/))
-- **Superlines account** with **Enterprise plan** (MCP access is Enterprise-only)
-- **API Key** from your [Superlines dashboard](https://analytics.superlines.io/settings/api-keys)
+- **Superlines account** on any paid plan or the 7-day free trial ([plans](https://www.superlines.io/pricing))
+- For the npm package: **Node.js 18+** ([Download](https://nodejs.org/)) and an **API key** from your [Superlines dashboard](https://analytics.superlines.io/settings/api-keys)
 
 ---
 
-## Quick Start
+## Claude and ChatGPT: sign in, no API key
+
+Clients that support remote MCP servers can connect directly, with nothing to install:
+
+1. In Claude (Settings → Connectors → Add custom connector), or in the connector settings of ChatGPT, add a connector with this URL:
+
+   ```
+   https://mcpsse.superlines.io
+   ```
+
+2. Sign in with your Superlines account when asked and approve access.
+
+The connector sees only the organizations your account belongs to. Use the npm package below for clients that only run local servers.
+
+---
+
+## Quick Start (npm package, API key)
 
 ### Step 1: Get Your API Key
 
@@ -350,8 +366,8 @@ Make sure your config includes the `env` section with your API key:
 
 ### "403 Forbidden"
 
-- API access requires an Enterprise plan
-- Contact [support@superlines.io](mailto:support@superlines.io) to upgrade
+- The MCP server needs a paid plan or an active free trial
+- Start a trial or pick a plan in your [Superlines dashboard](https://analytics.superlines.io), or contact [support@superlines.io](mailto:support@superlines.io)
 
 ### Claude says "I don't have access to any tools"
 

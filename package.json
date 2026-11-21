@@ -20,7 +20,7 @@
     "type": "git",
     "url": "git+https://github.com/Superlines/mcp-server.git"
   },
-  "homepage": "https://superlines.io/integrations/mcp",
+  "homepage": "https://www.superlines.io/platform/mcp-api",
   "bugs": {
     "url": "https://github.com/Superlines/mcp-server/issues"
   },

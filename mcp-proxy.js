@@ -13,7 +13,7 @@
  *   3. Set SUPERLINES_API_KEY environment variable
  * 
  * @see https://github.com/Superlines/mcp-server
- * @see https://superlines.io/integrations/mcp
+ * @see https://www.superlines.io/platform/mcp-api
  */
 
 const https = require('https');

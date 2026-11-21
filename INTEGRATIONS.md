@@ -198,7 +198,7 @@ Once connected, you can query:
 
 ## Requirements
 
-- **Plan:** Enterprise (MCP access is Enterprise-only)
+- **Plan:** any paid plan or the 7-day free trial
 - **Node.js:** 18+ required for npx
 - **API Key:** Valid Superlines API key
 
